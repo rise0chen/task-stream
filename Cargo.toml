@@ -1,0 +1,21 @@
+[package]
+name = "task-stream"
+version = "0.1.0"
+authors = ["rise0chen <rise0chen@163.com>"]
+description = "task stream"
+documentation = "https://docs.rs/task-stream"
+homepage = "https://unmp.crise.cn"
+repository = "https://gitee.com/unmp/unmp.example.rust.git"
+readme = "./README.md"
+keywords = ["task", "stream"]
+categories = ["embedded"]
+license-file = "LICENSE"
+edition = "2018"
+
+[dependencies]
+spin = { version = "0.9" }
+fixed-queue = {version = "^0.3.0"}
+futures-core = "0.3.13"
+
+[dev-dependencies]
+async-std = {version = "1.7", features = ["unstable"]}
