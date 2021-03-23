@@ -1,6 +1,6 @@
 [package]
 name = "task-stream"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["rise0chen <rise0chen@163.com>"]
 description = "task stream"
 documentation = "https://docs.rs/task-stream"

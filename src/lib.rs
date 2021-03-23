@@ -9,11 +9,10 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use core::task::{Context, Poll, Waker};
 use fixed_queue::spsc::{Receiver, Sender, Spsc};
 use futures_core::stream::Stream;
-use spin::{Lazy, Mutex};
+use spin::Mutex;
 
-pub static TASKS: Lazy<Tasks> = Lazy::new(|| Tasks::new(0));
+pub static TASKS: Tasks = Tasks::new();
 const SPSC_LEN: usize = 10;
-static SPSC: Spsc<TaskPoint, SPSC_LEN> = Spsc::new();
 
 pub enum TaskType {
     // 立即执行
@@ -34,35 +33,28 @@ struct Task {
 }
 
 pub struct Tasks {
-    clock: AtomicU64,
     tasks: Mutex<Vec<Task>>,
-    sender: Sender<'static, TaskPoint, 10>,
+    spsc: Spsc<TaskPoint, SPSC_LEN>,
     waker: Mutex<Option<Waker>>,
 }
 impl Tasks {
     /// 设置当前时间，单位毫秒
-    fn new(time: u64) -> Self {
-        let sender = SPSC.take_sender().unwrap();
+    pub const fn new() -> Self {
         Tasks {
-            clock: AtomicU64::new(time),
             tasks: Mutex::new(Vec::new()),
-            sender: sender,
+            spsc: Spsc::new(),
             waker: Mutex::new(None),
         }
     }
     pub(crate) fn set_waker(&self, waker: Waker) {
         *self.waker.lock() = Some(waker);
     }
-    /// 获取当前时间，单位毫秒
-    fn now(&self) -> u64 {
-        self.clock.load(Ordering::Relaxed)
-    }
     /// 添加同步任务
     pub fn add_task(&self, t: TaskType, f: fn() -> ()) {
         let task = Task {
             t: t,
             f: TaskPoint::Sync(f),
-            last: self.now(),
+            last: 0,
         };
         self.tasks.lock().push(task);
     }
@@ -74,18 +66,51 @@ impl Tasks {
         let task = Task {
             t: t,
             f: TaskPoint::Async(f),
-            last: self.now(),
+            last: 0,
         };
         self.tasks.lock().push(task);
+    }
+    /// 生成clock
+    pub fn clock(&self) -> Clock {
+        let sender = self.spsc.take_sender().unwrap();
+        Clock {
+            tasks: self,
+            clock: AtomicU64::new(1),
+            sender: sender,
+        }
+    }
+    /// 生成TaskStream
+    pub fn stream(&self) -> TaskStream {
+        let recver = self.spsc.take_recver().unwrap();
+        TaskStream {
+            tasks: self,
+            recver: recver,
+        }
+    }
+}
+
+pub struct Clock<'a> {
+    tasks: &'a Tasks,
+    clock: AtomicU64,
+    sender: Sender<'a, TaskPoint, SPSC_LEN>,
+}
+impl<'a> Clock<'a> {
+    /// 获取当前时间，单位毫秒
+    pub fn now(&self) -> u64 {
+        self.clock.load(Ordering::Relaxed)
     }
     /// tick毫秒执行一次
     pub fn tick(&self, tick: u64) {
         let now = self.clock.fetch_add(tick, Ordering::Relaxed);
 
-        let mut tasks = self.tasks.lock();
+        let mut tasks = self.tasks.tasks.lock();
         let tasks_len = tasks.len();
         for i in 0..tasks_len {
             let task = &mut tasks[tasks_len - 1 - i];
+            if task.last == 0 {
+                task.last = now;
+                continue;
+            }
             match task.t {
                 TaskType::Immediately => {
                     let task = tasks.swap_remove(tasks_len - 1 - i);
@@ -113,26 +138,18 @@ impl Tasks {
         }
     }
     fn ready(&self, value: TaskPoint) {
-        if let Err(_) = self.sender.send(value) {
+        if let Err(_) = { self.sender.send(value) } {
             panic!("task too much.");
         };
-        if let Some(warker) = self.waker.lock().take() {
+        if let Some(warker) = self.tasks.waker.lock().take() {
             warker.wake();
-        }
-    }
-    /// 生成TaskStream
-    pub fn stream(&self) -> TaskStream {
-        let recver = SPSC.take_recver().unwrap();
-        TaskStream {
-            tasks: self,
-            recver: recver,
         }
     }
 }
 
 pub struct TaskStream<'a> {
     tasks: &'a Tasks,
-    recver: Receiver<'a, TaskPoint, 10>,
+    recver: Receiver<'a, TaskPoint, SPSC_LEN>,
 }
 impl<'a> Stream for TaskStream<'a> {
     type Item = Pin<Box<dyn Future<Output = ()> + Send>>;

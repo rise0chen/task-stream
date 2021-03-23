@@ -23,9 +23,10 @@ async fn async_main() {
         }),
     );
     task::spawn(async {
+        let clock = TASKS.clock();
         let mut interval = stream::interval(std::time::Duration::from_millis(100));
         while let Some(_) = interval.next().await {
-            TASKS.tick(100);
+            clock.tick(100);
         }
     });
     task::spawn(async {
