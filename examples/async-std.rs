@@ -1,5 +1,6 @@
 use async_std::prelude::*;
-use async_std::{stream, task};
+use async_std::task;
+use core::time::Duration;
 use task_stream::{TaskType, TASKS};
 
 fn sync_task() {
@@ -22,21 +23,17 @@ async fn async_main() {
             println!("hello async, {}.", a);
         }),
     );
-    task::spawn(async {
-        let clock = TASKS.clock();
-        let mut interval = stream::interval(std::time::Duration::from_millis(100));
-        while let Some(_) = interval.next().await {
-            clock.tick(100);
-        }
-    });
+
     task::spawn(async {
         let mut stream = TASKS.stream();
         while let Some(fut) = stream.next().await {
             task::spawn(fut);
         }
     });
+    let clock = TASKS.clock();
     loop {
-        task::sleep(std::time::Duration::from_secs(10)).await
+        task::sleep(Duration::from_secs(10)).await;
+        clock.tick(100);
     }
 }
 fn main() {

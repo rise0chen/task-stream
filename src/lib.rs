@@ -49,6 +49,9 @@ impl Tasks {
     pub(crate) fn set_waker(&self, waker: Waker) {
         *self.waker.lock() = Some(waker);
     }
+    pub(crate) fn take_waker(&self) -> Option<Waker> {
+        self.waker.lock().take()
+    }
     /// 添加同步任务
     pub fn add_task(&self, t: TaskType, f: fn() -> ()) {
         let task = Task {
@@ -141,7 +144,7 @@ impl<'a> Clock<'a> {
         if let Err(_) = { self.sender.send(value) } {
             panic!("task too much.");
         };
-        if let Some(warker) = self.tasks.waker.lock().take() {
+        if let Some(warker) = self.tasks.take_waker() {
             warker.wake();
         }
     }

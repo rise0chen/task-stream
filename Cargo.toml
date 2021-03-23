@@ -1,14 +1,14 @@
 [package]
 name = "task-stream"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["rise0chen <rise0chen@163.com>"]
-description = "task stream"
+description = "a gobal task spawner, run in `no_std`."
 documentation = "https://docs.rs/task-stream"
-homepage = "https://unmp.crise.cn"
-repository = "https://gitee.com/unmp/unmp.example.rust.git"
+homepage = "https://blog.crise.cn"
+repository = "https://github.com/rise0chen/task-stream.git"
 readme = "./README.md"
-keywords = ["task", "stream"]
-categories = ["embedded"]
+keywords = ["task", "stream", "spawn"]
+categories = ["embedded", "asynchronous"]
 license-file = "LICENSE"
 edition = "2018"
 
