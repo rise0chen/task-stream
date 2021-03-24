@@ -22,7 +22,7 @@ pub enum TaskType {
     // 每n毫秒执行一次
     Interval(u64),
 }
-enum TaskPoint {
+pub enum TaskPoint {
     Sync(fn() -> ()),
     Async(Pin<Box<dyn Future<Output = ()> + Send + Sync>>),
 }
@@ -155,18 +155,12 @@ pub struct TaskStream<'a> {
     recver: Receiver<'a, TaskPoint, SPSC_LEN>,
 }
 impl<'a> Stream for TaskStream<'a> {
-    type Item = Pin<Box<dyn Future<Output = ()> + Send>>;
+    type Item = TaskPoint;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         if let Ok(task) = self.recver.try_recv() {
-            let future = {
-                match task {
-                    TaskPoint::Async(f) => f,
-                    TaskPoint::Sync(f) => Box::pin(async move { f() }),
-                }
-            };
-            cx.waker().clone().wake();
-            Poll::Ready(Some(future))
+            cx.waker().wake_by_ref();
+            Poll::Ready(Some(task))
         } else {
             self.tasks.set_waker(cx.waker().clone());
             Poll::Pending

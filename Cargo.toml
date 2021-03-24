@@ -1,8 +1,8 @@
 [package]
 name = "task-stream"
-version = "0.1.2"
+version = "0.2.1"
 authors = ["rise0chen <rise0chen@163.com>"]
-description = "a gobal task spawner, run in `no_std`."
+description = "a global task spawner, run in `no_std`."
 documentation = "https://docs.rs/task-stream"
 homepage = "https://blog.crise.cn"
 repository = "https://github.com/rise0chen/task-stream.git"

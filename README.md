@@ -1,6 +1,6 @@
 # Task-Stream
 
-task-stream is a gobal task spawner, can run in `no_std`.
+task-stream is a global task spawner, can run in `no_std`.
 
 It support the timer tasks, sync/async task.
 
@@ -39,17 +39,25 @@ TASKS.add_async_task(
 use async_std::prelude::*;
 use async_std::task;
 use core::time::Duration;
+use task_stream::{TaskPoint, TASKS};
 
 async fn async_main() {
     task::spawn(async {
         let mut stream = TASKS.stream();
-        while let Some(fut) = stream.next().await {
-            task::spawn(fut);
+        while let Some(task) = stream.next().await {
+            match task {
+                TaskPoint::Sync(f) => {
+                    std::thread::spawn(f);
+                }
+                TaskPoint::Async(fut) => {
+                    task::spawn(fut);
+                }
+            }
         }
     });
     let clock = TASKS.clock();
     loop {
-        task::sleep(Duration::from_secs(10)).await;
+        task::sleep(Duration::from_millis(100)).await;
         clock.tick(100);
     }
 }

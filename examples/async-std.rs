@@ -1,7 +1,7 @@
 use async_std::prelude::*;
 use async_std::task;
 use core::time::Duration;
-use task_stream::{TaskType, TASKS};
+use task_stream::{TaskPoint, TaskType, TASKS};
 
 fn sync_task() {
     println!("sync_task.");
@@ -26,13 +26,20 @@ async fn async_main() {
 
     task::spawn(async {
         let mut stream = TASKS.stream();
-        while let Some(fut) = stream.next().await {
-            task::spawn(fut);
+        while let Some(task) = stream.next().await {
+            match task {
+                TaskPoint::Sync(f) => {
+                    std::thread::spawn(f);
+                }
+                TaskPoint::Async(fut) => {
+                    task::spawn(fut);
+                }
+            }
         }
     });
     let clock = TASKS.clock();
     loop {
-        task::sleep(Duration::from_secs(10)).await;
+        task::sleep(Duration::from_millis(100)).await;
         clock.tick(100);
     }
 }
