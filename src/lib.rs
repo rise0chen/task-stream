@@ -41,6 +41,9 @@ pub fn tick(tick: u64) {
     CLOCK.set_time(CLOCK.now() + tick);
     TIMER.check_expirations();
 }
+pub fn now() -> u64 {
+    CLOCK.now()
+}
 pub fn sleep(delay: Duration) -> TimerFuture<'static> {
     TIMER.delay(delay)
 }

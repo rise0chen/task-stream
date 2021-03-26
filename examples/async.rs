@@ -25,11 +25,9 @@ fn test_capture_var() {
 }
 fn test_sleep() {
     task_stream::spawn(async move {
-        let mut now: u64 = 0;
         loop {
-            println!("now: {}.", now);
+            println!("now: {}.", task_stream::now());
             task_stream::sleep(Duration::from_millis(1000)).await;
-            now += 1000;
         }
     });
 }
@@ -42,8 +40,10 @@ async fn async_executor() {
         }
     });
     loop {
+        let now = chrono::Local::now().timestamp_millis();
         task::sleep(Duration::from_millis(100)).await;
-        task_stream::tick(100);
+        let tick = chrono::Local::now().timestamp_millis() - now;
+        task_stream::tick(tick as u64);
     }
 }
 fn main() {

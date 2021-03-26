@@ -1,6 +1,6 @@
 [package]
 name = "task-stream"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["rise0chen <rise0chen@163.com>"]
 description = "a global task spawner, run in `no_std`."
 documentation = "https://docs.rs/task-stream"
@@ -21,3 +21,4 @@ futures-intrusive = { version = "0.4.0", default-features = false }
 
 [dev-dependencies]
 async-std = {version = "1.7", features = ["unstable"]}
+chrono = "0.4"
