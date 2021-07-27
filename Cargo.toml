@@ -1,23 +1,23 @@
 [package]
-name = "task-stream"
-version = "0.3.2"
 authors = ["rise0chen <rise0chen@163.com>"]
+categories = ["embedded", "asynchronous"]
 description = "a global task spawner, run in `no_std`."
 documentation = "https://docs.rs/task-stream"
-homepage = "https://blog.crise.cn"
-repository = "https://github.com/rise0chen/task-stream.git"
-readme = "./README.md"
-keywords = ["task", "stream", "spawn"]
-categories = ["embedded", "asynchronous"]
-license-file = "LICENSE"
 edition = "2018"
+homepage = "https://blog.crise.cn"
+keywords = ["task", "stream", "spawn"]
+license-file = "LICENSE"
+name = "task-stream"
+readme = "./README.md"
+repository = "https://github.com/rise0chen/task-stream.git"
+version = "0.3.3"
 
 [dependencies]
-spin = { version = "0.9" }
-fixed-queue = {version = "^0.3.0"}
+async-task = {version = "4.0.3", default-features = false}
 futures-core = {version = "0.3.13", default-features = false}
-async-task = { version = "4.0.3", default-features = false }
-futures-intrusive = { version = "0.4.0", default-features = false }
+futures-intrusive = {version = "0.4.0", default-features = false}
+heapless = {version = "^0.7.3"}
+spin = {version = "0.9"}
 
 [dev-dependencies]
 async-std = {version = "1.7", features = ["unstable"]}
