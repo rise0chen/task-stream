@@ -1,6 +1,6 @@
+use async_tick as tick;
 use core::time::Duration;
 use std::thread;
-use task_stream::TaskStream;
 
 fn test_sync_fun() {
     fn sync_task() {
@@ -25,34 +25,32 @@ fn test_capture_var() {
 fn test_sleep() {
     task_stream::spawn(async move {
         loop {
-            println!("now: {}.", task_stream::now());
-            task_stream::sleep(Duration::from_millis(1000)).await;
+            println!("now: {:?}.", Duration::from_nanos(tick::now()));
+            tick::sleep(Duration::from_millis(1000)).await;
         }
     });
 }
 
-fn sync_executor() {
+fn main() {
     thread::spawn(|| {
-        let stream = TaskStream::stream();
+        let mut ticker = tick::take_tick().unwrap();
+        let period = Duration::from_millis(100);
         loop {
-            while let Some(task) = stream.get_task() {
-                task.run();
-            }
-            thread::sleep(Duration::from_millis(100));
+            thread::sleep(period);
+            ticker.tick(period);
         }
     });
-    loop {
-        let now = chrono::Local::now().timestamp_millis();
-        thread::sleep(Duration::from_millis(100));
-        let tick = chrono::Local::now().timestamp_millis() - now;
-        task_stream::tick(tick as u64);
-    }
-}
-fn main() {
+
     test_sync_fun();
     test_async_fun();
     test_capture_var();
     test_sleep();
 
-    sync_executor()
+    let stream = task_stream::stream();
+    loop {
+        while let Some(task) = stream.get_task() {
+            task.run();
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
 }

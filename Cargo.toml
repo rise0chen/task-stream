@@ -10,15 +10,14 @@ license-file = "LICENSE"
 name = "task-stream"
 readme = "./README.md"
 repository = "https://github.com/rise0chen/task-stream.git"
-version = "0.3.3"
+version = "0.3.4"
 
 [dependencies]
-async-task = {version = "4.0.3", default-features = false}
-futures-core = {version = "0.3.13", default-features = false}
-futures-intrusive = {version = "0.4.0", default-features = false}
-heapless = {version = "^0.7.3"}
-spin = {version = "0.9"}
+ach-mpmc = "0.1"
+async-task = {version = "4.1", default-features = false}
+futures-util = {version = "0.3", default-features = false}
 
 [dev-dependencies]
-async-std = {version = "1.7", features = ["unstable"]}
+async-tick = "0.1"
 chrono = "0.4"
+futures-executor = {version = "0.3", features = ["thread-pool"]}
