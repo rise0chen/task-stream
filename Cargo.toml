@@ -10,7 +10,7 @@ license-file = "LICENSE"
 name = "task-stream"
 readme = "./README.md"
 repository = "https://github.com/rise0chen/task-stream.git"
-version = "0.3.4"
+version = "0.3.5"
 
 [dependencies]
 ach-mpmc = "0.1"

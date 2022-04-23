@@ -42,7 +42,7 @@ impl<const N: usize> Executor<N> {
     /// # Safety
     ///
     /// - TaskStream must be used  on the original thread.
-    pub unsafe fn spawn_local<F>(&mut self, future: F)
+    pub unsafe fn spawn_local<F>(&self, future: F)
     where
         F: Future + 'static,
         F::Output: 'static,
@@ -64,6 +64,17 @@ where
 {
     EXEC.spawn(future)
 }
+/// # Safety
+///
+/// - TaskStream must be used  on the original thread.
+pub unsafe fn spawn_local<F>(future: F)
+where
+    F: Future + 'static,
+    F::Output: 'static,
+{
+    EXEC.spawn_local(future)
+}
+
 pub fn stream() -> TaskStream<'static, TASK_LEN> {
     EXEC.stream()
 }
