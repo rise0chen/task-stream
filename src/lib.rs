@@ -1,12 +1,15 @@
 #![no_std]
 
+mod local;
+
 use ach_mpmc::Mpmc;
-use async_task::Runnable;
+pub use async_task::Runnable;
 use core::future::Future;
 use core::pin::Pin;
 use core::task::{Context, Poll};
 use futures_util::task::AtomicWaker;
 use futures_util::Stream;
+pub use local::*;
 
 const TASK_LEN: usize = 64;
 static EXEC: Executor<TASK_LEN> = Executor::new();
@@ -21,6 +24,9 @@ impl<const N: usize> Executor<N> {
             queue: Mpmc::new(),
             waker: AtomicWaker::new(),
         }
+    }
+    pub const fn into_local(self) -> LocalExecutor<N> {
+        LocalExecutor::new(self)
     }
 
     /// task is waked
@@ -42,7 +48,7 @@ impl<const N: usize> Executor<N> {
     /// # Safety
     ///
     /// - TaskStream must be used  on the original thread.
-    pub unsafe fn spawn_local<F>(&self, future: F)
+    unsafe fn spawn_local<F>(&self, future: F)
     where
         F: Future + 'static,
         F::Output: 'static,
@@ -63,16 +69,6 @@ where
     F::Output: Send + 'static,
 {
     EXEC.spawn(future)
-}
-/// # Safety
-///
-/// - TaskStream must be used  on the original thread.
-pub unsafe fn spawn_local<F>(future: F)
-where
-    F: Future + 'static,
-    F::Output: 'static,
-{
-    EXEC.spawn_local(future)
 }
 
 pub fn stream() -> TaskStream<'static, TASK_LEN> {

@@ -32,14 +32,7 @@ fn test_sleep() {
 }
 
 fn main() {
-    thread::spawn(|| {
-        let mut ticker = tick::take_tick().unwrap();
-        let period = Duration::from_millis(100);
-        loop {
-            thread::sleep(period);
-            ticker.tick(period);
-        }
-    });
+    tick::auto_tick(Duration::from_millis(100));
 
     test_sync_fun();
     test_async_fun();
