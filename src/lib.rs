@@ -2,7 +2,7 @@
 
 mod local;
 
-use ach_mpmc::Mpmc;
+use ach_mpmc::heapless::Mpmc;
 pub use async_task::Runnable;
 use core::future::Future;
 use core::pin::Pin;
@@ -58,7 +58,7 @@ impl<const N: usize> Executor<N> {
         task.detach();
     }
 
-    pub fn stream(&self) -> TaskStream<N> {
+    pub fn stream(&'_ self) -> TaskStream<'_, N> {
         TaskStream { exec: self }
     }
 }

@@ -44,7 +44,7 @@ impl<const N: usize> LocalExecutor<N> {
         unsafe { self.exec.spawn_local(future) }
     }
 
-    pub fn stream(&self) -> LocalTaskStream<N> {
+    pub fn stream(&'_ self) -> LocalTaskStream<'_, N> {
         LocalTaskStream {
             stream: self.exec.stream(),
             _private: PhantomData,

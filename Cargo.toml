@@ -10,7 +10,7 @@ license-file = "LICENSE"
 name = "task-stream"
 readme = "./README.md"
 repository = "https://github.com/rise0chen/task-stream.git"
-version = "0.3.7"
+version = "0.3.8"
 
 [dependencies]
 ach-mpmc = "0.2"
@@ -18,6 +18,6 @@ async-task = {version = "4.1", default-features = false}
 futures-util = {version = "0.3", default-features = false}
 
 [dev-dependencies]
-async-tick = {version = "0.1", features = ["std"]}
+async-tick = {version = "0.2", features = ["std"]}
 chrono = "0.4"
 futures-executor = {version = "0.3", features = ["thread-pool"]}
